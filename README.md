@@ -12,7 +12,7 @@ This project was initially created to make easier to test various states in Stor
 ```
 
 ```css
-.foo:hover, .trigger\\:hover .foo {
+.foo:hover, .trigger\:hover .foo {
     /* your rules */
 }
 ```
