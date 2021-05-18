@@ -1,4 +1,4 @@
-const {hasPseudoClass, getSelectorWithoutPseudoClass, getTriggerSelectorBuilder, getTriggerSelectors} = require('./utils');
+const {hasPseudoClass, getSelectorWithoutPseudoClass, getTriggerSelectorBuilder, getTriggerSelectorsBuilder} = require('./utils');
 
 const postcss = require('postcss')
 
@@ -12,7 +12,7 @@ async function run (input, output, opts) {
 
 const defaultOptions = {
   triggerBaseClassName: 'trigger',
-  states: ['hover', 'focus', 'active']
+  states: ['hover']
 }
 
 describe('internals', () => {
@@ -35,8 +35,8 @@ describe('internals', () => {
 
   it('returns the trigger selectors from source selector string', () => {
     const getTriggerSelector = getTriggerSelectorBuilder('trigger')
-    expect(getTriggerSelectors('hover', getTriggerSelector)(['h1:hover'])).toEqual(['.trigger\\:hover h1'])
-    expect(getTriggerSelectors('hover', getTriggerSelector)(['h1:hover', 'a'])).toEqual(['.trigger\\:hover h1'])
+    expect(getTriggerSelectorsBuilder('hover', getTriggerSelector)(['h1:hover'])).toEqual(['.trigger\\:hover h1'])
+    expect(getTriggerSelectorsBuilder('hover', getTriggerSelector)(['h1:hover', 'a'])).toEqual(['.trigger\\:hover h1'])
   })
 })
 
@@ -47,6 +47,15 @@ describe('userland', () => {
 
   it('create hover trigger rule for rules with multiple selector', async () => {
     await run('a:hover, h1 { }', ".trigger\\:hover a { }\na:hover, h1 { }")
+  })
+
+  it('do not create focus trigger by default', async () => {
+    await run('input:focus { }', "input:focus { }")
+  })
+
+  it('create focus trigger when passed in opts.states', async () => {
+    const newOptions = Object.assign({}, defaultOptions, { states: ['hover', 'focus']});
+    await run('input:focus { }', ".trigger\\:focus input { }\ninput:focus { }", newOptions)
   })
 
   it('do not create hover trigger rule when no pseudo class', async () => {
