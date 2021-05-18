@@ -1,19 +1,27 @@
+const {getTriggerSelectors, getTriggerSelectorBuilder} = require('./utils');
 const processed = Symbol('processed')
 
-module.exports = (opts = { }) => {
+module.exports = (opts = {
+  triggerBaseClassName: 'trigger',
+  states: ['hover', 'focus', 'active']
+}) => {
 
-  // Work with options here
+  const getTriggerSelector = getTriggerSelectorBuilder(opts.triggerBaseClassName)
 
   return {
     postcssPlugin: 'postcss-trigger-state',
     Once (root) {
       root.walkRules(rule => {
         if (!rule[processed]) {
-          const newNode = rule.cloneBefore({
-            selectors: rule.selectors.map(s => `.trigger\\:hover ${s.slice(0, -':hover'.length)}`)
-          })
+          const newSelectors = getTriggerSelectors('hover', getTriggerSelector)(rule.selectors);
 
-          newNode[processed] = true
+          if (newSelectors.length > 0) {
+            const newNode = rule.cloneBefore({
+              selectors: newSelectors
+            })
+
+            newNode[processed] = true
+          }
         }
       })
     }
